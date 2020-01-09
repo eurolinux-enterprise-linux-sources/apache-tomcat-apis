@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<!-- A derivative of the Tomcat 6.0 build.xml file -->
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<project name="Servlet 2.5 and JSP 2.1" default="package" basedir=".">
+  <property file="build.properties"/>
+  <property name="output"    value="${basedir}/output"/>
+  <property name="classes"    value="${output}/classes"/>
+  <property name="source"    value="${basedir}/java"/>
+
+  <!-- Exact spec versions (for the manifests) -->
+  <property name="servlet.revision" value="MR2" />
+  <property name="jsp.revision" value="FR" />
+
+  <property name="servlet-api.jar" value="${output}/servlet-api.jar"/>
+  <property name="jsp-api.jar" value="${output}/jsp-api.jar"/>
+
+  <patternset id="files.servlet-api">
+    <include name="javax/servlet/*" />
+    <include name="javax/servlet/http/*" />
+    <include name="javax/servlet/resources/*" />
+  </patternset>
+
+  <patternset id="properties.servlet-api">
+    <include name="javax/servlet/*.properties" />
+    <include name="javax/servlet/http/*.properties" />
+    <include name="javax/servlet/resources/*.properties" />
+  </patternset>
+  
+  <patternset id="files.jsp-api">
+    <include name="javax/servlet/jsp/**" />
+  </patternset>
+
+  <patternset id="properties.jsp-api">
+    <include name="javax/servlet/jsp/**/*.properties" />
+  </patternset>
+
+  <target name="init">
+    <mkdir dir="${output}"/>
+    <mkdir dir="${classes}"/>
+  </target>
+
+  <target name="compile" depends="init">
+    <javac srcdir="java" destdir="${classes}"
+           debug="${compile.debug}"
+           source="${compile.source}"
+           target="${compile.target}"
+           excludes="**/CVS/**,**/.svn/**">
+    </javac>
+  </target>
+
+  <target name="package" depends="compile">
+    <!-- Servlet 2.5 Implementation JAR File -->
+    <filter token="implementation.revision"
+            value="${servlet.revision}"/>
+    <copy tofile="res/manifest.tmp"
+          file="res/servlet-api.jar.manifest"
+          overwrite="yes"
+          filtering="true" />
+    <jar jarfile="${servlet-api.jar}"
+         manifest="res/manifest.tmp">
+      <fileset dir="res">
+        <include name="META-INF/**" />
+      </fileset>
+      <fileset dir="${classes}">
+        <patternset refid="files.servlet-api"/>
+      </fileset>
+      <fileset dir="${source}">
+        <patternset refid="properties.servlet-api"/>
+      </fileset>
+    </jar>
+
+    <!-- JSP 2.1 Implementation JAR File -->
+    <filter token="implementation.revision"
+            value="${jsp.revision}"/>
+    <copy tofile="res/manifest.tmp"
+          file="res/jsp-api.jar.manifest"
+          overwrite="yes"
+          filtering="true" />
+    <jar  jarfile="${jsp-api.jar}"
+          manifest="res/manifest.tmp">
+      <fileset dir="res">
+        <include name="META-INF/**" />
+      </fileset>
+      <fileset dir="${classes}">
+        <patternset refid="files.jsp-api"/>
+      </fileset>
+      <fileset dir="${source}">
+        <patternset refid="properties.jsp-api"/>
+      </fileset>
+    </jar>
+  </target>
+
+  <target name="clean">
+    <delete dir="${basedir}/output" />
+    <delete file="${servlet-api.jar}" />
+    <delete file="${jsp-api.jar}" />
+  </target>
+
+</project>
